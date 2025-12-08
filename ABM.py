@@ -15,11 +15,15 @@ the agents are:
     • Factory, generating stocks;
     • Customers, final firms requiring stocks based on the endogenous final 
       clients deman;
+      
+through the script there are many 'N.B.:' to check with a simple 'ctrl+f'
 
 """
 
 import numpy as np
 from numpy import random #for Normal and Poisson distribution of demand
+import math #for and easier sqrt
+#TODO! CHECK THAT THE MATH STICKS TO THE MODEL DEFINED IN THE ARTICLE
 
 #global hyperparameters that must be set
 temporal_horizon = 365 #e.g.: 30 days for finishing ONE simulation episode
@@ -27,25 +31,28 @@ simulation_step = 1 #e.g.: 1 day for updating the states within the episode
 demand_type = "Normal" #what kind of PDF we use to generate the demand
 #fundamental hyperparameters of the model
 mu = 10 #average demand per simulation_step
-sigma = 1 #standard deviation of demand
+sigma = 5 #standard deviation of demand
 alpha = 0.33 #congestion sensitivity coefficient
 L_0 = 3 #free-flow lead time for delivering and picking-up stocks
-k = 1.28 #safety factor
+k = 2.33 #safety factor [1.28; 1.65; 2.33]
+kernel_size = 3 #for calculating the moving averages
 #cost hyperparameters
 p = 1 #unit stockout penalty
 h = 0.01 #unit holding cost
 c = 0.01 #unit transport cost
 
 class Factory:
-    def __init__(self, warehouse, production_lead_time, production_state):
+    def __init__(self, warehouse):
         self.warehouse = warehouse #number of stocks in the warehouse
+        #since we do not model any queue upstream, this class is super easy
         
 class Truck:
     def __init__(self,  maximum_load, available, position, current_load):
         self.maximum_load = maximum_load #maximum number of stocks that can be
                                         #carried
         self.available = available #whether it is available for transportation
-        self.position = position #where the truck is (close of far way for delivery)
+        self.position = position #where the truck is (close (i.e.: 0) or far 
+                                 #way for delivery)
         self.current_load = current_load #the amount of stock is currenlty bringing
         
 class Customer:
@@ -54,16 +61,15 @@ class Customer:
         self.demand_history = demand_history #in order to draw statistics  
         self.orders_status = orders_status #status of all orders
     
-    def frp(self, Q=7): #decided fixed safety stock and quantity to order
-                              #(they are hyperparameters)        
-        ROP = mu*L_0 + k*sigma
+    def frp(self, Q=mu): #decided fixed quantity to order (hyperparameter)        
+        ROP = mu*L_0 + k*sigma #*math.sqrt(L)
         
         if self.warehouse <= ROP:
             return Q
     
     
-    def arp(self, Q=7, n=3): #decided fixed quantity to rder (hyperparameter)
-                             #n indicates the convolution kernel size   
+    def arp(self, Q=mu, n=kernel_size): #decided fixed quantity to rder 
+                    #(hyperparameter), n indicates the convolution kernel size   
         SS = k*sigma
         weights = np.ones(n)/n #weights of the kernel
         #we only take the last number of the moving average and we round into 
@@ -75,8 +81,8 @@ class Customer:
             return Q
     
     
-    def fbr(self, n=3): #here both D and Q are calculated though moving averages
-                        #n indicates the convolution kernel size
+    def fbr(self, n=kernel_size): #here both D and Q are calculated though 
+                      #moving averages, n indicates the convolution kernel size
         SS = k*sigma
         weights = np.ones(n)/n #weights of the kernel
         #we only take the last number of the moving average and we round into 
@@ -105,10 +111,9 @@ def lead_time_updater(traffic):
 #N.B.: the initialization is fundamental, like initial conditions in PDE
 step_counter = 0
 truck_movement = 1.5 #how much the truck moves at each simulation step
-arinox = Factory(warehouse=5,
-                 production_lead_time=0.08,
-                 production_state=0)
-thales = Customer(warehouse=11,
+arinox = Factory(warehouse=5
+                 )
+thales = Customer(warehouse=mu + sigma*k,
                   demand_history=[],
                   orders_status={})
 truck1 = Truck(maximum_load=20, 
@@ -139,17 +144,23 @@ truck7 = Truck(maximum_load=200,
                available=True, 
                position=0, 
                current_load=0)
+#N.B.: from here we could change the number of trucks we could use, even with
+#varying cargo capacity
 lista_trucks = [truck1, truck2, truck3,
                 truck4, 
                 #truck5,
                 #truck6,
                 #truck7
                 ]
+#dictionary containing the results of the simulation
 costs = {"times_stockout":0,
          "stockout_cost":0, 
          "hold":0,
          "transportation":0
          }
+#simulation model
+#N.B.: in order to replicate always the same results
+#np.random.seed(42)
 while step_counter < temporal_horizon:
     
     #we generate the demand for the current iteration
@@ -163,13 +174,17 @@ while step_counter < temporal_horizon:
         #in this case we must update the cost due to the stockout
         costs["stockout_cost"] += p*(external_demand-thales.warehouse)
         costs["times_stockout"] += 1 #counter of the number of times we stockout
+        #in any case we sell what we have, hence we empty the warehouse
+        thales.warehouse = 0
         
     #if the warehouse of the Customer is enough           
     elif thales.warehouse >= external_demand:
         thales.warehouse -= external_demand #we sell the required amount of stock
                
     #we generate the demand, once the warehouse has been changed
-    customer_demand = thales.frb()
+    #N.B.: from here change the chosen policy
+    #L = lead_time_updater(sum(1 for truck in lista_trucks if not truck.available))
+    customer_demand = thales.arp()
     
     #if the Customer made an order and the factory is not empty we try to 
     #find a truck available
@@ -180,19 +195,21 @@ while step_counter < temporal_horizon:
             if truck.available == True and customer_demand <= truck.maximum_load:
                 truck.current_load = customer_demand
                 truck.available = False #we turn it to unavailable
-                arinox.warehouse -= customer_demand #we are using stocks from the warehouse
+                arinox.warehouse -= customer_demand #we are using stocks from 
+                                                    #the warehouse
                 break #since the truck has been found we exit the for loop
             
     #normal production for the Factory, normally produces per simulation_step
     #the average demand per simulation_step
+    #N.B.: we could try to set it stochastic, maybe even with a Weibull to 
+    #simulate failures
     arinox.warehouse += mu
     
     #update the traffic
     traffic = 0
     for truck in lista_trucks:
         if truck.available == False: #it means the truck is on the road
-           traffic += 1
-    traffic = traffic #otherwise adjust alpha ad divide it by: len(lista_trucks)
+           traffic += 1 #otherwise adjust alpha ad divide it by: len(lista_trucks) 
    
     L = lead_time_updater(traffic)
     
