@@ -19,6 +19,7 @@ the agents are:
 through the script there are many 'N.B.:' to check with a simple 'ctrl+f'
 
 """
+#TODO! implement also the way-back steps for the empty trucks (Customer -> Factory)
 
 import numpy as np
 from numpy import random #for Normal and Poisson distribution of demand
@@ -230,3 +231,4 @@ while step_counter < temporal_horizon:
     costs["hold"] += h*thales.warehouse
     
     step_counter += simulation_step #final counter
+
