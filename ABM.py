@@ -19,7 +19,6 @@ the agents are:
 through the script there are many 'N.B.:' to check with a simple 'ctrl+f'
 
 """
-#TODO! implement also the way-back steps for the empty trucks (Customer -> Factory)
 
 import numpy as np
 from numpy import random #for Normal and Poisson distribution of demand
@@ -48,13 +47,14 @@ class Factory:
         #since we do not model any queue upstream, this class is super easy
         
 class Truck:
-    def __init__(self,  maximum_load, available, position, current_load):
+    def __init__(self,  maximum_load, available, position, current_load, state):
         self.maximum_load = maximum_load #maximum number of stocks that can be
                                         #carried
         self.available = available #whether it is available for transportation
         self.position = position #where the truck is (close (i.e.: 0) or far 
                                  #way for delivery)
         self.current_load = current_load #the amount of stock is currenlty bringing
+        self.state = state #'idle', 'going', 'returning'
         
 class Customer:
     def __init__(self, warehouse, demand_history, orders_status):
@@ -120,38 +120,81 @@ thales = Customer(warehouse=mu + sigma*k,
 truck1 = Truck(maximum_load=20, 
                available=True, 
                position=0,
-               current_load=0)
+               current_load=0,
+               state = "idle")
 truck2 = Truck(maximum_load=25, 
                available=True, 
                position=0, 
-               current_load=0)
+               current_load=0,
+               state = "idle")
 truck3 = Truck(maximum_load=15, 
                available=True, 
                position=0, 
-               current_load=0)
+               current_load=0,
+               state = "idle")
 truck4 = Truck(maximum_load=56, 
                available=True, 
                position=0, 
-               current_load=0)
+               current_load=0,
+               state = "idle")
 truck5 = Truck(maximum_load=200, 
                available=True, 
                position=0, 
-               current_load=0)
+               current_load=0,
+               state = "idle")
 truck6 = Truck(maximum_load=200, 
                available=True, 
                position=0, 
-               current_load=0)
+               current_load=0,
+               state = "idle")
 truck7 = Truck(maximum_load=200, 
                available=True, 
                position=0, 
-               current_load=0)
+               current_load=0,
+               state = "idle")
+truck8 = Truck(maximum_load=200, 
+               available=True, 
+               position=0, 
+               current_load=0,
+               state = "idle")
+truck9 = Truck(maximum_load=200, 
+               available=True, 
+               position=0, 
+               current_load=0,
+               state = "idle")
+truck10 = Truck(maximum_load=200, 
+               available=True, 
+               position=0, 
+               current_load=0,
+               state = "idle")
+truck11 = Truck(maximum_load=200, 
+               available=True, 
+               position=0, 
+               current_load=0,
+               state = "idle")
+truck12 = Truck(maximum_load=200, 
+               available=True, 
+               position=0, 
+               current_load=0,
+               state = "idle")
+truck13 = Truck(maximum_load=200, 
+               available=True, 
+               position=0, 
+               current_load=0,
+               state = "idle")
 #N.B.: from here we could change the number of trucks we could use, even with
 #varying cargo capacity
 lista_trucks = [truck1, truck2, truck3,
                 truck4, 
-                #truck5,
-                #truck6,
-                #truck7
+                truck5,
+                truck6,
+                truck7,
+                truck8,
+                #truck9,
+                #truck10,
+                #truck11,
+                #truck12,
+                #truck13,
                 ]
 #dictionary containing the results of the simulation
 costs = {"times_stockout":0,
@@ -185,7 +228,7 @@ while step_counter < temporal_horizon:
     #we generate the demand, once the warehouse has been changed
     #N.B.: from here change the chosen policy
     #L = lead_time_updater(sum(1 for truck in lista_trucks if not truck.available))
-    customer_demand = thales.arp()
+    customer_demand = thales.frp()
     
     #if the Customer made an order and the factory is not empty we try to 
     #find a truck available
@@ -196,6 +239,8 @@ while step_counter < temporal_horizon:
             if truck.available == True and customer_demand <= truck.maximum_load:
                 truck.current_load = customer_demand
                 truck.available = False #we turn it to unavailable
+                truck.state = 'going' #the truck is moving from: arinox to: 
+                                                                        #thales
                 arinox.warehouse -= customer_demand #we are using stocks from 
                                                     #the warehouse
                 break #since the truck has been found we exit the for loop
@@ -211,24 +256,35 @@ while step_counter < temporal_horizon:
     for truck in lista_trucks:
         if truck.available == False: #it means the truck is on the road
            traffic += 1 #otherwise adjust alpha ad divide it by: len(lista_trucks) 
-   
     L = lead_time_updater(traffic)
     
+    #update the state of the trucks
     for truck in lista_trucks:
-        if truck.position >= L: #if the truck has arrived at the Customer
-            thales.warehouse += truck.current_load
-            costs["transportation"] += c*truck.current_load
-            truck.current_load = 0
-            truck.available = True
-            truck.position = 0 #we set the position of the truck back to zero
-            
-            
-        if truck.position < L and truck.available == False:
+        # ===== ARINOX -> THALES =====
+        if truck.state == "going":
             truck.position += truck_movement
-            
     
+            if truck.position >= L:
+                # arrival and unload
+                thales.warehouse += truck.current_load
+                costs["transportation"] += c * truck.current_load
+                truck.current_load = 0
+                # change the state
+                truck.state = "returning"
+                truck.position = L
+    
+        # ===== THALES -> ARINOX =====
+        elif truck.state == "returning":
+            truck.position -= truck_movement
+    
+            if truck.position <= 0:
+                truck.position = 0
+                truck.state = "idle"
+                truck.available = True
+                       
+
+            
     #updating the holding cost
     costs["hold"] += h*thales.warehouse
     
     step_counter += simulation_step #final counter
-
