@@ -14,7 +14,7 @@ the agents are:
     • Trucks, moving stocks;
     • Factory, generating stocks;
     • Customers, final firms requiring stocks based on the endogenous final 
-      clients deman;
+      clients demand;
       
 through the script there are many 'N.B.:' to check with a simple 'ctrl+f'
 
@@ -33,9 +33,11 @@ demand_type = "Normal" #what kind of PDF we use to generate the demand
 mu = 10 #average demand per simulation_step
 sigma = 5 #standard deviation of demand
 alpha = 0.33 #congestion sensitivity coefficient
+beta = 1.01 #how faster the unloaded truck moves with respect to the loaded ones
 L_0 = 3 #free-flow lead time for delivering and picking-up stocks
 k = 2.33 #safety factor [1.28; 1.65; 2.33]
 kernel_size = 3 #for calculating the moving averages
+truck_movement = 1.5 #how much the truck moves at each simulation step
 #cost hyperparameters
 p = 1 #unit stockout penalty
 h = 0.01 #unit holding cost
@@ -110,8 +112,6 @@ def lead_time_updater(traffic):
 
 #initilization of the simulation
 #N.B.: the initialization is fundamental, like initial conditions in PDE
-step_counter = 0
-truck_movement = 1.5 #how much the truck moves at each simulation step
 arinox = Factory(warehouse=5
                  )
 thales = Customer(warehouse=mu + sigma*k,
@@ -203,6 +203,7 @@ costs = {"times_stockout":0,
          "transportation":0
          }
 #simulation model
+step_counter = 0
 #N.B.: in order to replicate always the same results
 #np.random.seed(42)
 while step_counter < temporal_horizon:
@@ -275,7 +276,7 @@ while step_counter < temporal_horizon:
     
         # ===== THALES -> ARINOX =====
         elif truck.state == "returning":
-            truck.position -= truck_movement
+            truck.position -= beta*truck_movement
     
             if truck.position <= 0:
                 truck.position = 0
