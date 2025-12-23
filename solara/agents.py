@@ -36,7 +36,7 @@ class Factory(mesa.Agent):
         #since we do not model any queue upstream, this class is super easy
         
     def step(self):
-        self.warehouse += self.model.mu #average production
+        self.warehouse += self.model.mu #average production per step
 
 
 class Truck(mesa.Agent):
@@ -186,6 +186,3 @@ class Customer(mesa.Agent):
         #find a truck available
         if order is not None:
             self.place_order(order)
-
-
-

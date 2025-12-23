@@ -70,7 +70,7 @@ model_params = {
 # ======================
 # Cost plot
 # ======================
-
+#editing the plot style
 def post_process_lines(ax):
     # figure dimension
     ax.figure.set_size_inches(12, 9) 
@@ -98,7 +98,7 @@ CostPlot = make_plot_component(
         "transportation": "orange",
     },
     backend="matplotlib", #graphic library used in backend
-    post_process = post_process_lines
+    post_process = post_process_lines #function for customizing the plot
 )
 
 
@@ -106,17 +106,15 @@ CostPlot = make_plot_component(
 # ======================
 # Model & visualization
 # ======================
-
 page = SolaraViz(
-    SupplyChainModel(),
-    components=[
-        CostPlot,
-        get_costs,
-    ],
+                SupplyChainModel(),
+                components=[
+                    CostPlot,
+                    get_costs,
+                ],
 
-    model_params=model_params,
-    name="Supply Chain Model",
-)
-
+                model_params=model_params,
+                name="Supply Chain Model",
+            )
 
 page

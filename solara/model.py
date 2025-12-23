@@ -6,8 +6,6 @@ Created on Sun Dec 21 11:48:00 2025
 """
 
 import mesa
-import networkx as nx
-from mesa.space import NetworkGrid
 from agents import (Factory, 
                     Customer, 
                     Truck)
@@ -37,8 +35,6 @@ class SupplyChainModel(mesa.Model):
         h = 0.01, #unit holding cost
         c = 0.01, #unit transport cost
         n_trucks=8,#number of trucks initial
-        truck_loads=(20, 25, 15, 50, 50, 100, 25, 50)
-        
     ):
         #pass the parameters of the parent class
         super().__init__(seed=seed)
@@ -58,12 +54,11 @@ class SupplyChainModel(mesa.Model):
         self.h = h
         self.c = c
        
-        #performance variables      
+        #performance variables for DataCollector    
         self.hold = 0.0
         self.stockout_cost = 0.0
         self.times_stockout = 0
         self.transportation = 0.0
-        self.steps = 0  # for visualizing and Customer.orders_status
 
         # ---- Agents ----        
         self.factory = Factory(model = self, 
@@ -93,7 +88,7 @@ class SupplyChainModel(mesa.Model):
         for agent in [self.factory, self.customer, *self.trucks]:
             self.agents.add(agent)
 
-        
+        #directly linked and updated by the performance variables
         self.datacollector = mesa.DataCollector(
             model_reporters = {"hold": "hold",
                                "stockout_cost": "stockout_cost",
@@ -101,12 +96,8 @@ class SupplyChainModel(mesa.Model):
                                "transportation": "transportation"}
         )
         
-
-
     def step(self):
-        # increment step counter FIRST
-        self.steps += 1
-    
+
         # agents act
         self.agents.do("step")
     
@@ -115,4 +106,3 @@ class SupplyChainModel(mesa.Model):
     
         # collect data
         self.datacollector.collect(self)
-
