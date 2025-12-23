@@ -205,7 +205,7 @@ costs = {"times_stockout":0,
 #simulation model
 step_counter = 0
 #N.B.: in order to replicate always the same results
-#np.random.seed(42)
+np.random.seed(42)
 while step_counter < temporal_horizon:
     
     #we generate the demand for the current iteration
