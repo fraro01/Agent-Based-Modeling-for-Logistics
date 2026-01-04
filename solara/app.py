@@ -84,7 +84,7 @@ model_params = {
     "sigma": Slider("Demand σ [unit]", 5, 1, 20, 1),
     "alpha": Slider("Congestion sensitivity (α) [ad]", 0.33, 0.0, 1.0, 0.01),
     "beta": Slider("Empty truck speed factor (β) [ad]", 1.03, 1.0, 2.0, 0.01),
-    "L_0": Slider("Free-flow lead time [days]", 3, 1, 5, 0.33),
+    "L_0": Slider("Free-flow lead time (L0) [days]", 3, 1, 5, 0.33),
     "k": Slider("Safety factor (k) [ad]", 2.33, 1.0, 3.0, 0.01),
     "truck_movement": Slider("Truck movement per step [ad]", 1.5, 0.1, 5.0, 0.1),
     "p": Slider("Unit stockout penalty [€/unit]", 1.0, 0.0, 10.0, 0.1),
