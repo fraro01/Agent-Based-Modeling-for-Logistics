@@ -68,7 +68,6 @@ class SupplyChainModel(mesa.Model):
         self.customer = Customer(model = self, 
                                  warehouse = mu + sigma * k, 
                                  demand_history = [],
-                                 orders_status = {}, #TODO!
                                  )
 
         # Trucks: create a list of agents, one per truck
@@ -76,7 +75,6 @@ class SupplyChainModel(mesa.Model):
         for i in range(n_trucks):
             truck = Truck(
                 model=self,
-                maximum_load=50, #TODO! fixed!!!
                 available=True,
                 position=0,
                 current_load=0,

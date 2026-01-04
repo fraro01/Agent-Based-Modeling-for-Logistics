@@ -1,4 +1,4 @@
-Consigli Giovanni Ferraris:	
+Consigli Giovanni Ferraris: {
 
    ### CODICE ###
 	• Porre unità di misura per ogni hyperparametro	✔
@@ -7,7 +7,7 @@ Consigli Giovanni Ferraris:
 
 	• Dividere la dashboard in 3 grafici (uno per ogni policy)	❌ There is no space!
 
-	• Porre un box esplicativo del simulatore nella dashboard, magari anche in fondo nella sezione information	✔
+	• Porre un box esplicativo del simulatore nella dashboard, magari anche in fondo nella sezione information	✔ (not in the section information)
 
    ### REPORT ###
 	• 5-10 Min max di presentazione
@@ -20,4 +20,9 @@ Consigli Giovanni Ferraris:
 
 	• Descrivere gli agenti nel report
 	
-	
+   }
+
+Mio: {
+	• Truck.maximum_load, limitations to be discussed in the paper.
+
+   }

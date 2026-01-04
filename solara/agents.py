@@ -43,12 +43,9 @@ class Factory(mesa.Agent):
 class Truck(mesa.Agent):
     """An agent that delivers goods between factory and customer"""
     
-    def __init__(self,  model, maximum_load, available, position, current_load, state):
+    def __init__(self,  model, available, position, current_load, state):
         #pass the parameters of the parent class
         super().__init__(model)
-        #TODO! modify this, adjust it accordingly to the model.py?
-        self.maximum_load = maximum_load #maximum number of stocks that can be
-                                        #carried
         self.available = available #whether it is available for transportation
         self.position = position #where the truck is (close (i.e.: 0) or far 
                                  #way for delivery)
@@ -100,13 +97,12 @@ class Customer(mesa.Agent):
     """An agent that requires a stochastic amount of goods based on external
         exogenous demands"""
         
-    def __init__(self, model, warehouse, demand_history, orders_status):
+    def __init__(self, model, warehouse, demand_history):
         #pass the parameters of the parent class
         super().__init__(model)
         
         self.warehouse = warehouse #number of stocks in the warehouse
-        self.demand_history = demand_history #in order to draw statistics  
-        self.orders_status = orders_status #status of all orders TODO! erase it?
+        self.demand_history = demand_history #in order to draw statistics
         
     #TODO! for all of them adjust them accordingly to the paper
     def frp(self): #decided fixed quantity to order (hyperparameter)    
@@ -153,8 +149,8 @@ class Customer(mesa.Agent):
         
         #we try to find an available truck to send the stocks
         for truck in self.model.trucks:
-            #if a truck is available   TODO! adjust this accordingly to the paper
-            if truck.available and quantity <= truck.maximum_load:
+            #if a truck is available
+            if truck.available:
                 truck.assign_load(quantity)
                 factory.warehouse -= quantity #we are using stocks from 
                                                     #the warehouse
@@ -172,8 +168,6 @@ class Customer(mesa.Agent):
             self.model.times_stockout += 1
             #update the cost of stock-out
             self.model.stockout_cost += self.model.p * (demand - self.warehouse)
-            #we generate a delay, with the gravity of the current demand (stock-out)
-            self.orders_status[self.model.steps] = demand
             #in any case we sell what we have, hence we empty the warehouse
             self.warehouse = 0
         #if the warehouse of the Customer is enough 
