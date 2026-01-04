@@ -50,7 +50,7 @@ def model_info(model: SupplyChainModel):
     return solara.Markdown(
         text_info,
         style={
-            "padding-top": "5%",
+            "padding-top": "15%",
             "font-size": "60%",
             "line-height": "1.2",
         }
