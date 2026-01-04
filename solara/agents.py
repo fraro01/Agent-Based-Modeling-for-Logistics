@@ -11,7 +11,7 @@ from numpy import random #for Normal and Poisson distribution of demand
 
 # ======================
 # Utility functions
-# ======================
+# ======================        global variable
 def demand_generator(mu, sigma, demand_type):
     if demand_type == "Normal":
         demand = random.normal(loc=mu, scale=sigma)
@@ -20,6 +20,7 @@ def demand_generator(mu, sigma, demand_type):
     return max(0, round(demand)) #make it integer and always non-negative
 
 def lead_time_updater(model, traffic):
+    #TODO! see the maths in the paper
     L = model.L_0 + model.alpha*traffic
     return round(L)
 
@@ -45,7 +46,7 @@ class Truck(mesa.Agent):
     def __init__(self,  model, maximum_load, available, position, current_load, state):
         #pass the parameters of the parent class
         super().__init__(model)
-        
+        #TODO! modify this, adjust it accordingly to the model.py?
         self.maximum_load = maximum_load #maximum number of stocks that can be
                                         #carried
         self.available = available #whether it is available for transportation
@@ -53,7 +54,8 @@ class Truck(mesa.Agent):
                                  #way for delivery)
         self.current_load = current_load #the amount of stock is currenlty bringing
         self.state = state #'idle', 'going', 'returning'
-        
+    
+    #loading the truck
     def assign_load(self, quantity):
         self.current_load = quantity
         self.available = False
@@ -69,12 +71,14 @@ class Truck(mesa.Agent):
             traffic = sum(not t.available for t in self.model.trucks)
             L = lead_time_updater(self.model, traffic)
 
+            #if we have already reached the customer
             if self.position >= L:
                 #arrival and unload
                 customer = self.model.customer
                 customer.warehouse += self.current_load
-                # Truck.step
+                # transportation cost update
                 self.model.transportation += self.model.c * self.current_load
+                #unload the truck
                 self.current_load = 0
                 #change the state
                 self.state = "returning"
@@ -82,8 +86,10 @@ class Truck(mesa.Agent):
 
         # ===== THALES -> ARINOX =====
         elif self.state == "returning":
+            #moving the truck back
             self.position -= self.model.beta * self.model.truck_movement
 
+            #if we have already reached the factory
             if self.position <= 0:
                 self.position = 0
                 self.available = True
@@ -100,16 +106,17 @@ class Customer(mesa.Agent):
         
         self.warehouse = warehouse #number of stocks in the warehouse
         self.demand_history = demand_history #in order to draw statistics  
-        self.orders_status = orders_status #status of all orders
+        self.orders_status = orders_status #status of all orders TODO! erase it?
         
+    #TODO! for all of them adjust them accordingly to the paper
     def frp(self): #decided fixed quantity to order (hyperparameter)    
         Q = self.model.mu    
-        ROP = self.model.mu*self.model.L_0 + self.model.k*self.model.sigma #*math.sqrt(L)
+        ROP = self.model.mu*self.model.L_0 + self.model.k*self.model.sigma
         
         if self.warehouse <= ROP:
             return Q
     
-    def arp(self): #decided fixed quantity to rder 
+    def arp(self): #decided fixed quantity to reoder 
                     #(hyperparameter), n indicates the convolution kernel size 
         Q = self.model.mu
         n = self.model.kernel_size
@@ -140,13 +147,13 @@ class Customer(mesa.Agent):
     def place_order(self, quantity):
         factory = self.model.factory
         
-        #if the factory has enough warehouse
+        #if the factory has not enough warehouse
         if factory.warehouse < quantity:
-            return #we stop immmediately the exacution of the function without returning any value
+            return #we stop immmediately the execution of the function without returning any value
         
         #we try to find an available truck to send the stocks
         for truck in self.model.trucks:
-            #if a truck is available
+            #if a truck is available   TODO! adjust this accordingly to the paper
             if truck.available and quantity <= truck.maximum_load:
                 truck.assign_load(quantity)
                 factory.warehouse -= quantity #we are using stocks from 
@@ -163,6 +170,7 @@ class Customer(mesa.Agent):
         if self.warehouse < demand:
             #counter of the number of times we stockout
             self.model.times_stockout += 1
+            #update the cost of stock-out
             self.model.stockout_cost += self.model.p * (demand - self.warehouse)
             #we generate a delay, with the gravity of the current demand (stock-out)
             self.orders_status[self.model.steps] = demand
@@ -174,12 +182,12 @@ class Customer(mesa.Agent):
             self.warehouse -= demand 
 
         #we generate the demand, once the warehouse has been changed
-        #N.B.: from here change the chosen policy
-        if self.model.order_policy == "frp":
+        #from here change the chosen policy
+        if self.model.order_policy == "FRP":
             order = self.frp()
-        elif self.model.order_policy == "arp":
+        elif self.model.order_policy == "ARP":
             order = self.arp()
-        else: #fbr
+        else: #FBR
             order = self.fbr()
 
         #if the Customer made an order and the factory is not empty we try to 

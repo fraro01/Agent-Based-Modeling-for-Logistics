@@ -9,25 +9,52 @@ import solara #Solara framework for building web apps
 from model import SupplyChainModel #import of the model
 
 from mesa.visualization import ( #Mesa modules for visualization
-                                Slider,
+                                Slider, #to create sliders for parameters
                                 SolaraViz, #special component of Solara, created by Mesa in order to link an ABM with a web interface
-                                make_plot_component,
+                                make_plot_component, #to create plots
                             )
 
-# ======================
-# Cost report summary
-# ======================
-def get_costs(model: SupplyChainModel): #get the numbers from the model itself
+# ===============================
+# Cost report summary & Info
+# ===============================
+def get_costs(model: SupplyChainModel):
     text = (
-        f"### Supply Chain Costs\n\n"
+        f"### Supply Chain Costs\n"
         f"- **Step:** {model.steps}\n"
         f"- **Times stockout:** {model.times_stockout}\n"
         f"- **Stockout cost:** {model.stockout_cost:.2f}\n"
         f"- **Holding cost:** {model.hold:.2f}\n"        
         f"- **Transportation cost:** {model.transportation:.2f}"
     )
-    return solara.Markdown(text)
 
+    return solara.Markdown(
+        text,
+        style={
+        }
+    )
+def model_info(model: SupplyChainModel):
+    text_info = (
+        f"**Info**  \n"
+        f"The model is composed of a total of {len(model.agents)} agents: one *factory agent*, responsible for producing inventory, "
+        f"one *customer agent*, responsible for purchasiong and holding stock, and the rest are *truck agents* that enable the "
+        f"transportation of goods between the factory and the customer.\n"
+        f"The panel on the left allows to tweak the model hyperparameters in order to explore different scenarios. "
+        f"The most relevant is the *Ordering policy*, which determines the inventory replenishmnet strategy adopted by the customer.\n"
+        f"The plot shows the evolution of the different cost components over time, while the panel on the right provides a numerical summary.  \n"
+        f"*Times stockout:* number of occurerences the customer ran out of stock during the simulation.\n"
+        f"*Stockout cost:* cumulative cost incurred due to stockouts.\n"
+        f"*Holding cost:* cumulative cost of holding inventory.\n"
+        f"*Transportation cost:* cumulative cost of transporting goods.\n"
+    )
+
+    return solara.Markdown(
+        text_info,
+        style={
+            "padding-top": "5%",
+            "font-size": "60%",
+            "line-height": "1.2",
+        }
+    )
 
 # ======================
 # Interactive parameters
@@ -48,22 +75,22 @@ model_params = {
                     },
     "order_policy": {
                         "type": "Select",
-                        "value": "frp",
-                        "values": ["frp", "arp", "fbr"],
+                        "value": "FRP",
+                        "values": ["FRP", "ARP", "FBR"],
                         "label": "Ordering Policy",
                     },
 
-    "mu": Slider("Average demand (mu)", 10, 1, 50, 1),
-    "sigma": Slider("Demand std (sigma)", 5, 1, 20, 1),
-    "alpha": Slider("Congestion sensitivity (alpha)", 0.33, 0.0, 1.0, 0.01),
-    "beta": Slider("Truck speed factor (beta)", 1.01, 0.1, 2.0, 0.01),
-    "L_0": Slider("Free-flow lead time (L0)", 3, 1, 10, 1),
-    "k": Slider("Safety factor (k)", 2.33, 1.0, 3.0, 0.01),
-    "truck_movement": Slider("Truck movement per step", 1.5, 0.1, 5.0, 0.1),
-    "p": Slider("Unit stockout penalty (p)", 1.0, 0.0, 10.0, 0.1),
-    "h": Slider("Unit holding cost (h)", 0.01, 0.0, 1.0, 0.01),
-    "c": Slider("Unit transport cost (c)", 0.01, 0.0, 1.0, 0.01),
-    "n_trucks": Slider("Number of trucks", 8, 1, 20, 1),
+    "mu": Slider("Demand μ [unit]", 10, 1, 50, 1),
+    "sigma": Slider("Demand σ [unit]", 5, 1, 20, 1),
+    "alpha": Slider("Congestion sensitivity (α) [ad]", 0.33, 0.0, 1.0, 0.01),
+    "beta": Slider("Empty truck speed factor (β) [ad]", 1.03, 1.0, 2.0, 0.01),
+    "L_0": Slider("Free-flow lead time [days]", 3, 1, 5, 0.33),
+    "k": Slider("Safety factor (k) [ad]", 2.33, 1.0, 3.0, 0.01),
+    "truck_movement": Slider("Truck movement per step [ad]", 1.5, 0.1, 5.0, 0.1),
+    "p": Slider("Unit stockout penalty [€/unit]", 1.0, 0.0, 10.0, 0.1),
+    "h": Slider("Unit holding cost [€/unit]", 0.01, 0.0, 1.0, 0.01),
+    "c": Slider("Unit transport cost [€/unit]", 0.01, 0.0, 1.0, 0.01),
+    "n_trucks": Slider('Number of trucks [ad]', 8, 1, 20, 1),
 }
 
 
@@ -102,7 +129,6 @@ CostPlot = make_plot_component(
 )
 
 
-
 # ======================
 # Model & visualization
 # ======================
@@ -111,8 +137,8 @@ page = SolaraViz(
                 components=[
                     CostPlot,
                     get_costs,
+                    model_info,
                 ],
-
                 model_params=model_params,
                 name="Supply Chain Model",
             )

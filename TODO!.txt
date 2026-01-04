@@ -1,0 +1,23 @@
+Consigli Giovanni Ferraris:	
+
+   ### CODICE ###
+	• Porre unità di misura per ogni hyperparametro	✔
+
+	• Porre i range massimi per ogni hyperparametro	❌ There is no space! Furthermore, the sliders have intrinsic limits
+
+	• Dividere la dashboard in 3 grafici (uno per ogni policy)	❌ There is no space!
+
+	• Porre un box esplicativo del simulatore nella dashboard, magari anche in fondo nella sezione information	✔
+
+   ### REPORT ###
+	• 5-10 Min max di presentazione
+
+	• Rimarca che l'abbiamo creato per qualcuno che possa vedere vantaggio e svantaggi, congestione
+
+	• Nel report, nella presentazione fare leva sulle key words di Remondino: Value, costs, strategy, competitive gain
+
+	• Comparazione tra tre policies e soprattutto anche tra gli altri parametri!
+
+	• Descrivere gli agenti nel report
+	
+	

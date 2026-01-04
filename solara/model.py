@@ -5,8 +5,8 @@ Created on Sun Dec 21 11:48:00 2025
 @author: Francesco
 """
 
-import mesa
-from agents import (Factory, 
+import mesa #Python agent based modeling library
+from agents import (Factory, # import of the agents
                     Customer, 
                     Truck)
 
@@ -19,7 +19,7 @@ class SupplyChainModel(mesa.Model):
     def __init__(
         self,
         seed=None, #reproducibility
-        order_policy = "frp", #ordering policy: frp, arp, fbr
+        order_policy = "FRP", #ordering policy: FRP, ARP, FBR
         demand_type = "Normal", #what kind of PDF we use to generate the demand
         #fundamental hyperparameters of the model
         mu = 10, #average demand per simulation_step
@@ -40,8 +40,8 @@ class SupplyChainModel(mesa.Model):
         super().__init__(seed=seed)
         
         #save the parameers of the model, so that they are accessible by the agents
-        self.demand_type = demand_type
         self.order_policy = order_policy
+        self.demand_type = demand_type
         self.mu = mu
         self.sigma = sigma
         self.alpha = alpha
@@ -68,7 +68,7 @@ class SupplyChainModel(mesa.Model):
         self.customer = Customer(model = self, 
                                  warehouse = mu + sigma * k, 
                                  demand_history = [],
-                                 orders_status = {},
+                                 orders_status = {}, #TODO!
                                  )
 
         # Trucks: create a list of agents, one per truck
@@ -76,7 +76,7 @@ class SupplyChainModel(mesa.Model):
         for i in range(n_trucks):
             truck = Truck(
                 model=self,
-                maximum_load=50, #fixed!!!
+                maximum_load=50, #TODO! fixed!!!
                 available=True,
                 position=0,
                 current_load=0,
