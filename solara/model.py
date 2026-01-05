@@ -24,7 +24,7 @@ class SupplyChainModel(mesa.Model):
         #fundamental hyperparameters of the model
         mu = 10, #average demand per simulation_step
         sigma = 5, #standard deviation of demand
-        alpha = 0.33, #congestion sensitivity coefficient
+        alpha = 0.75, #congestion sensitivity coefficient
         beta = 1.01, #how faster the unloaded truck moves with respect to the loaded ones
         L_0 = 3, #free-flow lead time for delivering and picking-up stocks
         k = 2.33, #safety factor [1.28; 1.65; 2.33]
@@ -88,8 +88,8 @@ class SupplyChainModel(mesa.Model):
 
         #directly linked and updated by the performance variables
         self.datacollector = mesa.DataCollector(
-            model_reporters = {"hold": "hold",
-                               "stockout_cost": "stockout_cost",
+            model_reporters = {"holding": "hold",
+                               "stockout": "stockout_cost",
                                "times_stockout": "times_stockout",
                                "transportation": "transportation"}
         )

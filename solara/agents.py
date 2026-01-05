@@ -8,6 +8,7 @@ Created on Sun Dec 21 11:47:58 2025
 import mesa #Python agent based modeling library
 import numpy as np #for numerical computations
 from numpy import random #for Normal and Poisson distribution of demand
+import math #for the sqrt
 
 # ======================
 # Utility functions
@@ -20,7 +21,6 @@ def demand_generator(mu, sigma, demand_type):
     return max(0, round(demand)) #make it integer and always non-negative
 
 def lead_time_updater(model, traffic):
-    #TODO! see the maths in the paper
     L = model.L_0 + model.alpha*traffic
     return round(L)
 
@@ -65,7 +65,7 @@ class Truck(mesa.Agent):
             self.position += self.model.truck_movement
             
             #update the traffic
-            traffic = sum(not t.available for t in self.model.trucks)
+            traffic = sum(not t.available for t in self.model.trucks) / len(self.model.trucks)
             L = lead_time_updater(self.model, traffic)
 
             #if we have already reached the customer
@@ -104,7 +104,6 @@ class Customer(mesa.Agent):
         self.warehouse = warehouse #number of stocks in the warehouse
         self.demand_history = demand_history #in order to draw statistics
         
-    #TODO! for all of them adjust them accordingly to the paper
     def frp(self): #decided fixed quantity to order (hyperparameter)    
         Q = self.model.mu    
         ROP = self.model.mu*self.model.L_0 + self.model.k*self.model.sigma
@@ -116,12 +115,12 @@ class Customer(mesa.Agent):
                     #(hyperparameter), n indicates the convolution kernel size 
         Q = self.model.mu
         n = self.model.kernel_size
-        SS = self.model.k*self.model.sigma
+        SS = self.model.k*self.model.sigma*math.sqrt(self.model.L_0)
         weights = np.ones(n)/n #weights of the kernel
         #we only take the last number of the moving average and we round into 
         #integer, 'valid' means no padding
         D = round((np.convolve(self.demand_history, weights, mode='valid'))[-1])
-        ROP = D + SS
+        ROP = D*self.model.L_0 + SS
         
         if self.warehouse <= ROP:
             return Q
@@ -129,13 +128,13 @@ class Customer(mesa.Agent):
     def fbr(self): #here both D and Q are calculated though 
                       #moving averages, n indicates the convolution kernel size
         n = self.model.kernel_size
-        SS = self.model.k*self.model.sigma
+        SS = self.model.k*self.model.sigma*math.sqrt(self.model.L_0)
         weights = np.ones(n)/n #weights of the kernel
         #we only take the last number of the moving average and we round into 
         #integer, 'valid' means no padding
         D = round((np.convolve(self.demand_history, weights, mode='valid'))[-1])        
-        ROP = D + SS        
-        Q = D
+        ROP = D*self.model.L_0 + SS    
+        Q = 1.33 * ROP - self.warehouse
         
         if self.warehouse <= ROP:
             return round(Q)

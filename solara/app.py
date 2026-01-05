@@ -24,7 +24,8 @@ def get_costs(model: SupplyChainModel):
         f"- **Times stockout:** {model.times_stockout}\n"
         f"- **Stockout cost:** {model.stockout_cost:.2f}\n"
         f"- **Holding cost:** {model.hold:.2f}\n"        
-        f"- **Transportation cost:** {model.transportation:.2f}"
+        f"- **Transportation cost:** {model.transportation:.2f}\n"
+        f"- **Total cost:** {model.hold + model.stockout_cost + model.transportation:.2f}\n"
     )
 
     return solara.Markdown(
@@ -82,7 +83,7 @@ model_params = {
 
     "mu": Slider("Demand μ [unit]", 10, 1, 50, 1),
     "sigma": Slider("Demand σ [unit]", 5, 1, 20, 1),
-    "alpha": Slider("Congestion sensitivity (α) [ad]", 0.33, 0.0, 1.0, 0.01),
+    "alpha": Slider("Congestion sensitivity (α) [ad]", 0.75, 0.0, 2.0, 0.33),
     "beta": Slider("Empty truck speed factor (β) [ad]", 1.03, 1.0, 2.0, 0.01),
     "L_0": Slider("Free-flow lead time (L0) [days]", 3, 1, 5, 0.33),
     "k": Slider("Safety factor (k) [ad]", 2.33, 1.0, 3.0, 0.01),
@@ -120,8 +121,8 @@ def post_process_lines(ax):
 
 CostPlot = make_plot_component(
     {
-        "hold": "blue",
-        "stockout_cost": "red",
+        "stockout": "red",
+        "holding": "blue",        
         "transportation": "orange",
     },
     backend="matplotlib", #graphic library used in backend
