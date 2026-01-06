@@ -22,7 +22,7 @@ def demand_generator(mu, sigma, demand_type):
 
 def lead_time_updater(model, traffic):
     L = model.L_0 + model.alpha*traffic
-    return round(L)
+    return L
 
 # ======================
 # Agents

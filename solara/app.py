@@ -14,25 +14,41 @@ from mesa.visualization import ( #Mesa modules for visualization
                                 make_plot_component, #to create plots
                             )
 
-# ===============================
-# Cost report summary & Info
-# ===============================
+# =================================
+# Cost report summary & KPIS & Info
+# =================================
+#cost report
 def get_costs(model: SupplyChainModel):
     text = (
         f"### Supply Chain Costs\n"
-        f"- **Step:** {model.steps}\n"
-        f"- **Times stockout:** {model.times_stockout}\n"
-        f"- **Stockout cost:** {model.stockout_cost:.2f}\n"
-        f"- **Holding cost:** {model.hold:.2f}\n"        
-        f"- **Transportation cost:** {model.transportation:.2f}\n"
-        f"- **Total cost:** {model.hold + model.stockout_cost + model.transportation:.2f}\n"
+        f"- **Step [unit]:** {model.steps}\n"
+        f"- **Times stockout [ad]:** {model.times_stockout}\n"
+        f"- **Stockout cost [€]:** {model.stockout_cost:.2f}\n"
+        f"- **Holding cost [€]:** {model.hold:.2f}\n"        
+        f"- **Transportation cost [€]:** {model.transportation:.2f}\n"
+        f"- **Total cost [€]:** {model.hold + model.stockout_cost + model.transportation:.2f}\n"
     )
-
     return solara.Markdown(
         text,
         style={
         }
     )
+#kpis
+def get_kpi(model: SupplyChainModel):
+    kpis = model.compute_kpis()
+    text = (
+        f"### KPIs\n\n"
+        f"- **AVG lead time [days]:** {kpis['avg_lead_time']:.2f}\n"
+        f"- **CV lead time [ad]:** {kpis['cv_lead_time']:.2f}\n"
+        f"- **AVG traffic [ad]:** {kpis['avg_traffic']:.2f} %\n"
+        f"- **CV warehouse [ad]:** {kpis['cv_inventory']:.2f}\n"
+    )
+    return solara.Markdown(
+        text,
+        style={
+        }
+    )
+#info
 def model_info(model: SupplyChainModel):
     text_info = (
         f"**Info**  \n"
@@ -47,11 +63,10 @@ def model_info(model: SupplyChainModel):
         f"*Holding cost:* cumulative cost of holding inventory.\n"
         f"*Transportation cost:* cumulative cost of transporting goods.\n"
     )
-
     return solara.Markdown(
         text_info,
         style={
-            "padding-top": "15%",
+            "padding-top": "5%",
             "font-size": "60%",
             "line-height": "1.2",
         }
@@ -95,29 +110,22 @@ model_params = {
 }
 
 
-# ======================
-# Cost plot
-# ======================
+# ===========================
+# Cost plot & Lead time plot
+# ===========================
 #editing the plot style
-def post_process_lines(ax):
+def post_process_lines_cost_plot(ax):
     # figure dimension
-    ax.figure.set_size_inches(12, 9) 
-
+    ax.figure.set_size_inches(6, 4) 
     # axis titles
-    ax.set_xlabel("Steps", fontsize=16)
-    ax.set_ylabel("Cost", fontsize=16)
-    
+    ax.set_xlabel("Steps", fontsize=10)
+    ax.set_ylabel("Cost [€]", fontsize=10)
     # Ticks axes
-    ax.tick_params(axis='x', labelsize=12)
-    ax.tick_params(axis='y', labelsize=12)
-    
+    ax.tick_params(axis='x', labelsize=10)
+    ax.tick_params(axis='y', labelsize=10)
     #change lines thickness
     for line in ax.lines:
-        line.set_linewidth(3)
-
-    #legend
-    leg = ax.legend(loc="center left", bbox_to_anchor=(1, 0.92), fontsize=12, 
-                    title="Cost Types", title_fontsize=12)
+        line.set_linewidth(2)
 
 CostPlot = make_plot_component(
     {
@@ -126,9 +134,26 @@ CostPlot = make_plot_component(
         "transportation": "orange",
     },
     backend="matplotlib", #graphic library used in backend
-    post_process = post_process_lines #function for customizing the plot
+    post_process = post_process_lines_cost_plot #function for customizing the plot
 )
 
+#the same as above, but for the lead time plot
+def post_process_lt(ax):
+    ax.figure.set_size_inches(6, 4)
+    ax.set_xlabel("Steps", fontsize=10)
+    ax.set_ylabel("Lead time [days]", fontsize=10)
+    ax.tick_params(axis='x', labelsize=10)
+    ax.tick_params(axis='y', labelsize=10)
+    for line in ax.lines:
+        line.set_linewidth(2)
+
+LeadTimePlot = make_plot_component(
+    {
+        "lead_time": "green"
+    },
+    backend="matplotlib",
+    post_process=post_process_lt,
+)
 
 # ======================
 # Model & visualization
@@ -137,7 +162,9 @@ page = SolaraViz(
                 SupplyChainModel(),
                 components=[
                     CostPlot,
+                    LeadTimePlot,
                     get_costs,
+                    get_kpi,
                     model_info,
                 ],
                 model_params=model_params,

@@ -6,9 +6,11 @@ Created on Sun Dec 21 11:48:00 2025
 """
 
 import mesa #Python agent based modeling library
+import numpy as np #numerical computing library
 from agents import (Factory, # import of the agents
                     Customer, 
-                    Truck)
+                    Truck,
+                    lead_time_updater) #for lead time calculation kpi
 
 # ======================
 # Model
@@ -59,6 +61,12 @@ class SupplyChainModel(mesa.Model):
         self.stockout_cost = 0.0
         self.times_stockout = 0
         self.transportation = 0.0
+        #added for kpis
+        self.lead_time = 0
+        self.customer_warehouse_history = []
+        self.traffic_history = []
+        self.lead_time_history = []
+
 
         # ---- Agents ----        
         self.factory = Factory(model = self, 
@@ -91,7 +99,14 @@ class SupplyChainModel(mesa.Model):
             model_reporters = {"holding": "hold",
                                "stockout": "stockout_cost",
                                "times_stockout": "times_stockout",
-                               "transportation": "transportation"}
+                               "transportation": "transportation",
+                               #added for kpis
+                               "lead_time": "lead_time",
+                               "customer_warehouse_history": "customer_warehouse_history",
+                               "traffic_history": "traffic_history",
+                               "lead_time_history" : "lead_time_history",
+                               
+                               }
         )
         
     def step(self):
@@ -102,5 +117,31 @@ class SupplyChainModel(mesa.Model):
         # update holding cost
         self.hold += self.h * self.customer.warehouse
     
-        # collect data
+        # collect kpis data
+        self.customer_warehouse_history.append(self.customer.warehouse)
+        traffic = (sum(not t.available for t in self.trucks) / len(self.trucks))
+        lead_time = lead_time_updater(self, traffic)
+        self.traffic_history.append(traffic)
+        self.lead_time_history.append(lead_time)
+        self.lead_time = lead_time
+
+        # collect data at the end of the step
         self.datacollector.collect(self)
+
+    def compute_kpis(self):
+        """Compute additional KPIs after the simulation ends"""
+        #lead time avg and coefficient of variation
+        AVG_L = float(np.mean(self.lead_time_history)) if len(self.lead_time_history) > 0 else 0
+        CV_L = float(np.std(self.lead_time_history) / AVG_L) if AVG_L > 0 else 0
+        #warehouse avg and coefficient of variation
+        AVG_S = float(np.mean(self.customer_warehouse_history)) if len(self.customer_warehouse_history) > 0 else 0
+        CV_S = float(np.std(self.customer_warehouse_history) / AVG_S) if AVG_S > 0 else 0
+        #traffic avg
+        AVG_T = float(np.mean(self.traffic_history)) if len(self.traffic_history) > 0 else 0
+
+        return {
+            "avg_lead_time": AVG_L,
+            "cv_lead_time": CV_L,
+            "cv_inventory": CV_S,
+            "avg_traffic": AVG_T * 100,
+        }
