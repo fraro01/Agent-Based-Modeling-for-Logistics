@@ -23,10 +23,10 @@ def get_costs(model: SupplyChainModel):
         f"### Supply Chain Costs\n"
         f"- **Step [unit]:** {model.steps}\n"
         f"- **Times stockout [ad]:** {model.times_stockout}\n"
-        f"- **Stockout cost [€]:** {model.stockout_cost:.2f}\n"
-        f"- **Holding cost [€]:** {model.hold:.2f}\n"        
-        f"- **Transportation cost [€]:** {model.transportation:.2f}\n"
-        f"- **Total cost [€]:** {model.hold + model.stockout_cost + model.transportation:.2f}\n"
+        f"- **Stockout cost:** {model.stockout_cost:.2f} €\n"
+        f"- **Holding cost:** {model.hold:.2f} €\n"        
+        f"- **Transportation cost:** {model.transportation:.2f} €\n"
+        f"- **Total cost:** {model.hold + model.stockout_cost + model.transportation:.2f} €\n"
     )
     return solara.Markdown(
         text,
@@ -38,7 +38,7 @@ def get_kpi(model: SupplyChainModel):
     kpis = model.compute_kpis()
     text = (
         f"### KPIs\n\n"
-        f"- **AVG lead time [days]:** {kpis['avg_lead_time']:.2f}\n"
+        f"- **AVG lead time [unit]:** {kpis['avg_lead_time']:.2f}\n"
         f"- **CV lead time [ad]:** {kpis['cv_lead_time']:.2f}\n"
         f"- **AVG traffic [ad]:** {kpis['avg_traffic']:.2f} %\n"
         f"- **CV warehouse [ad]:** {kpis['cv_inventory']:.2f}\n"
@@ -97,15 +97,15 @@ model_params = {
                     },
 
     "mu": Slider("Demand μ [unit]", 10, 1, 50, 1),
-    "sigma": Slider("Demand σ [unit]", 5, 1, 20, 1),
-    "alpha": Slider("Congestion sensitivity (α) [ad]", 0.75, 0.0, 2.0, 0.33),
-    "beta": Slider("Empty truck speed factor (β) [ad]", 1.03, 1.0, 2.0, 0.01),
-    "L_0": Slider("Free-flow lead time (L0) [days]", 3, 1, 5, 0.33),
+    "sigma": Slider("Demand σ [unit]", 5, 0.1, 15, 0.25),
+    "alpha": Slider("Congestion sensitivity (α) [ad]", 0.75, 0.0, 2.0, 0.01),
+    "beta": Slider("Empty truck speed factor (β) [ad]", 1.1, 1.0, 1.5, 0.005),
+    "L_0": Slider("Free-flow lead time (L0) [unit]", 3, 0.1, 10, 0.25),
     "k": Slider("Safety factor (k) [ad]", 2.33, 1.0, 3.0, 0.01),
-    "truck_movement": Slider("Truck movement per step [ad]", 1.5, 0.1, 5.0, 0.1),
-    "p": Slider("Unit stockout penalty [€/unit]", 1.0, 0.0, 10.0, 0.1),
-    "h": Slider("Unit holding cost [€/unit]", 0.01, 0.0, 1.0, 0.01),
-    "c": Slider("Unit transport cost [€/unit]", 0.01, 0.0, 1.0, 0.01),
+    "truck_movement": Slider("Truck movement per step [ad]", 1, 0.1, 5.0, 0.1),
+    "p": Slider("Unit stockout penalty [€/unit]", 25.0, 0.0, 100.0, 1),
+    "h": Slider("Unit holding cost [€/unit]", 1.5, 0.0, 50.0, 0.5),
+    "c": Slider("Unit transport cost [€/unit]", 4, 0.0, 50.0, 0.5),
     "n_trucks": Slider('Number of trucks [ad]', 8, 1, 20, 1),
 }
 
