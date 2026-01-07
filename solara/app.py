@@ -118,7 +118,7 @@ def post_process_lines_cost_plot(ax):
     # figure dimension
     ax.figure.set_size_inches(6, 4) 
     # axis titles
-    ax.set_xlabel("Steps", fontsize=10)
+    ax.set_xlabel("Steps [unit]", fontsize=10)
     ax.set_ylabel("Cost [€]", fontsize=10)
     # Ticks axes
     ax.tick_params(axis='x', labelsize=10)
@@ -140,8 +140,8 @@ CostPlot = make_plot_component(
 #the same as above, but for the lead time plot
 def post_process_lt(ax):
     ax.figure.set_size_inches(6, 4)
-    ax.set_xlabel("Steps", fontsize=10)
-    ax.set_ylabel("Lead time [days]", fontsize=10)
+    ax.set_xlabel("Steps [unit]", fontsize=10)
+    ax.set_ylabel("Lead time [unit]", fontsize=10)
     ax.tick_params(axis='x', labelsize=10)
     ax.tick_params(axis='y', labelsize=10)
     for line in ax.lines:
