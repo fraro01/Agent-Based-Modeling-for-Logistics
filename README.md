@@ -6,6 +6,13 @@ This repository contains the Python implementation of the Agent-Based Model (ABM
 
 The simulation models a single-echelon supply chain and analyzes inventory reorder policies under demand uncertainty and congestion effects.
 
+<p align="center">
+   <img src="schema.JPG" width="50%" alt="schema of the fuctioning">
+   <figcaption align="center">Schema of the logic of the dashboard</figcaption> 
+</p>
+
+We model the relation between the single couple: factory-customer, with multiple truck agents, as many as the user inserts from the hyperparameters panel.
+
 The model is implemented using the **[Mesa](https://mesa.readthedocs.io/latest/)** framework and rendered as an interactive dashboard using **[Solara](https://solara.dev/documentation)**.
 
 ---
@@ -31,6 +38,7 @@ The model is implemented using the **[Mesa](https://mesa.readthedocs.io/latest/)
    ```bash
    pip install -r requirements.txt
    ```
+4. Make sure to have Python installed, and `pip` working properly from `cmd`.
 ---
 
 ## Usage

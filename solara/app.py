@@ -53,15 +53,17 @@ def model_info(model: SupplyChainModel):
     text_info = (
         f"**Info**  \n"
         f"The model is composed of a total of {len(model.agents)} agents: one *factory agent*, responsible for producing inventory, "
-        f"one *customer agent*, responsible for purchasiong and holding stock, and the rest are *truck agents* that enable the "
-        f"transportation of goods between the factory and the customer.\n"
+        f"one *customer agent*, responsible for purchasing and holding stock, and the rest are *truck agents* that enable the "
+        f"transportation of goods between the factory and the customer.  \n"
         f"The panel on the left allows to tweak the model hyperparameters in order to explore different scenarios. "
-        f"The most relevant is the *Ordering policy*, which determines the inventory replenishmnet strategy adopted by the customer.\n"
-        f"The plot shows the evolution of the different cost components over time, while the panel on the right provides a numerical summary.  \n"
+        f"The most relevant is the *Ordering policy*, which determines the inventory replenishment strategy adopted by the customer.  \n"
+        f"The plot on the left shows the evolution of different cost components over time, the one on the right shows the evolution of the lead time.\n"
+        f"The 'Costs' panel enlists the various costs, while the 'KPIs' panel enlists the main KPIs.  \n"
         f"*Times stockout:* number of occurerences the customer ran out of stock during the simulation.\n"
         f"*Stockout cost:* cumulative cost incurred due to stockouts.\n"
         f"*Holding cost:* cumulative cost of holding inventory.\n"
-        f"*Transportation cost:* cumulative cost of transporting goods.\n"
+        f"*Transportation cost:* cumulative cost of transporting goods.  \n"
+        f"AVG stands for average, CV stands for coefficient of variation (std/mean). [ad] stands for adimensional quantity."
     )
     return solara.Markdown(
         text_info,
