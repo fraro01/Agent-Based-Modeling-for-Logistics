@@ -10,19 +10,19 @@ Consigli Giovanni Ferraris: {
 	• Porre un box esplicativo del simulatore nella dashboard, magari anche in fondo nella sezione information	✔ (not in the section information)
 
    ### REPORT ###
-	• 5-10 Min max di presentazione
+	• 5-10 Min max di presentazione	✔
 
-	• Rimarca che l'abbiamo creato per qualcuno che possa vedere vantaggio e svantaggi, congestione
+	• Rimarca che l'abbiamo creato per qualcuno che possa vedere vantaggi e svantaggi, congestione	✔
 
-	• Nel report, nella presentazione fare leva sulle key words di Remondino: Value, costs, strategy, competitive gain
+	• Nel report, nella presentazione fare leva sulle key words di Remondino: Value, costs, strategy, competitive gain		✔
 
-	• Comparazione tra tre policies e soprattutto anche tra gli altri parametri!
+	• Comparazione tra tre policies e soprattutto anche tra gli altri parametri!	✔
 
-	• Descrivere gli agenti nel report
+	• Descrivere gli agenti nel report 	✔
 	
    }
 
 Mio: {
-	• Truck.maximum_load, limitations to be discussed in the paper.
+	• Truck.maximum_load, limitations to be discussed in the paper. 	❌ Otherwise too long!
 
    }
