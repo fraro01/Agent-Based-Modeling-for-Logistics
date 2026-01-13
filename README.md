@@ -2,7 +2,7 @@
 
 This repository contains the Python implementation of the Agent-Based Model (ABM) developed in the paper:
 
-> **Risk-Aware Inventory Management: Analyzing Reorder Policies Under Demand Uncertainty and Congestion**
+> **Risk-Aware Inventory Management, Analyzing Reorder Policies Under Demand Uncertainty and Congestion**
 
 The simulation models a single-echelon supply chain and analyzes inventory reorder policies under demand uncertainty and congestion effects.
 
